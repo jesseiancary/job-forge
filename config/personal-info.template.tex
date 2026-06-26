@@ -1,0 +1,45 @@
+% ============================================================
+% Personal Information Configuration (LaTeX)
+% ============================================================
+% This file defines LaTeX commands for personal information
+% used across all resumes and cover letters.
+%
+% SETUP INSTRUCTIONS:
+% 1. Copy this file to: config/personal-info.tex
+% 2. Replace all placeholder values with your actual information
+% 3. Save the file (it will be gitignored)
+% 4. Your LaTeX documents will automatically use these values
+%
+% NOTE: config/personal-info.tex is gitignored for privacy.
+% Only this template file is committed to the repository.
+% ============================================================
+
+% ---------- Basic Information ----------
+\newcommand{\MyName}{Your Name}
+\newcommand{\MyTitle}{Your Current Position}
+
+% ---------- Contact Information ----------
+\newcommand{\MyCity}{City}
+\newcommand{\MyState}{State}
+\newcommand{\MyPhone}{(987) 654-3210}
+\newcommand{\MyEmail}{your.email@gmail.com}
+
+% ---------- Professional Links ----------
+\newcommand{\MyLinkedIn}{linkedin.com/in/your-profile}
+\newcommand{\MyGitHub}{github.com/your-profile}
+
+% ---------- Optional: Additional Links ----------
+% Uncomment and customize if needed:
+% \newcommand{\MyWebsite}{yourwebsite.com}
+% \newcommand{\MyPortfolio}{portfolio.yourwebsite.com}
+% \newcommand{\MyTwitter}{twitter.com/yourhandle}
+
+% ---------- Usage Example ----------
+% In your .tex files, use:
+%   \input{../config/personal-info}
+%
+% Then reference variables like:
+%   {\Huge \MyName}
+%   \MyCity, \MyState
+%   \href{mailto:\MyEmail}{\MyEmail}
+%   \href{https://\MyLinkedIn}{\MyLinkedIn}

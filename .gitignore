@@ -1,0 +1,30 @@
+# Ignore LaTeX intermediate files
+*.aux
+*.fls
+*.log
+*.out
+*.pdf
+*.fdb_latexmk
+*.synctex.gz
+
+# Ignore backups and copies
+*.tex.backup
+*copy.*
+
+# Ignore all contents of /applied directory (company-specific applications)
+/applied/*
+# But keep the directory itself
+!/applied/.gitkeep
+
+# Ignore all resume variants except resume.tex
+/resumes/*
+!/resumes/sample/
+/resumes/sample/*
+!/resumes/sample/resume.tex
+
+# Ignore personal information config files (keep templates only)
+/config/personal-info.tex
+/config/PERSONAL_INFO.md
+
+# Ignore personal signature (keep sample only)
+/signature.png

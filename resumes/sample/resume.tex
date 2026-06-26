@@ -1,0 +1,299 @@
+% ============================================================
+% Your Name - Resume (LaTeX)
+% Variant: Sample
+% Compile with: xelatex resume.tex (run twice if using hyperref refs)
+% ============================================================
+\documentclass[10pt]{article}
+
+% ---------- Page setup ----------
+\usepackage[letterpaper, margin=0.325in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\pagestyle{empty} % Remove page numbers
+
+% ---------- Fonts ----------
+% Using Calibri via fontspec (requires XeLaTeX)
+\usepackage{fontspec}
+\setmainfont{Calibri}
+
+% Fallback if Calibri not available (uncomment these and comment above):
+% \usepackage[default]{sourcesanspro}
+% \usepackage[T1]{fontenc}
+
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{changepage}
+\usepackage{needspace}
+
+% Prevent hyphenation and word breaks
+\tolerance=1
+\emergencystretch=\maxdimen
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\raggedright
+
+% ---------- Colors ----------
+\definecolor{darktext}{RGB}{30,30,30}
+\definecolor{lighttext}{RGB}{130,130,130}
+\color{darktext}
+
+% ---------- Hyperref setup (no boxes, subtle color) ----------
+\hypersetup{
+  colorlinks=true,
+  linkcolor=lighttext,
+  urlcolor=lighttext,
+}
+
+% ---------- Spacing ----------
+\setlength{\parindent}{0pt}
+\setlength{\topsep}{0pt}
+
+% ============================================================
+% TWO-COLUMN "RAIL" LAYOUT BUILDING BLOCKS (page-breakable)
+% ============================================================
+% Left column (~28% width) carries per-entry metadata: job title /
+% company / dates / location, or degree / school / date. Right column
+% carries the actual content: bullets, or a description paragraph.
+% A full-width rule sits above each entry.
+%
+% Implementation notes (the hard-won parts):
+% 1. A true minipage/tabular approach can't break across pages, which
+%    breaks long sections (e.g. Employment History spanning multiple
+%    pages). So the right-column content is laid out as a normal
+%    indented block (flows/breaks naturally), and the left-column
+%    metadata is placed in the margin via \makebox.
+% 2. A naive \makebox[0pt][r]{\parbox[t]{...}{multi-line metadata}}
+%    looks fine for short (1-2 line) labels, but for a 4-line label
+%    (Title/Company/Dates/Location) the box's full DEPTH gets counted
+%    by TeX's interline spacing, pushing the following line (the first
+%    bullet) down by roughly the box's height. Fix: force the box's
+%    depth to 0pt via \raisebox{0pt}[\ht][0pt]{...} while preserving
+%    its real height, so alignment is correct AND the page-builder
+%    still reserves the correct vertical space.
+% 3. Because the metadata box's height is now "hidden" inside a
+%    same-line construct, ordinary LaTeX orphan/widow avoidance no
+%    longer naturally keeps a job's header attached to its first
+%    bullet across a page break. \needspace reserves room for the
+%    rule + a few lines before starting a new entry, so an entry's
+%    header doesn't get stranded alone at the bottom of a page.
+\newlength{\railwidth}
+% Set the left column width here. The right column will automatically take the remaining space.
+\setlength{\railwidth}{0.22\textwidth}
+\newbox\railbox
+
+% \sectionlabel{Title} prints a small standalone section heading
+% (e.g. "Employment History"). It does NOT repeat per entry --
+% call it once before the first \jobentry/\eduentry/etc. in a section.
+\newcommand{\sectionlabel}[1]{%
+  \par\vspace{-4pt}%
+  \noindent\textcolor{lightgray}{\rule{\textwidth}{0.3pt}}\par\vspace{1pt}%
+  \noindent{\bfseries\large #1}\par\vspace{-4pt}%
+}
+
+% Generic entry row: left column = metadata (arg #1), right column =
+% content (the environment body). A full-width rule sits above the row.
+% The metadata is placed in the margin via \makebox, and content flows
+% in an indented block that can break across pages.
+% Usage:
+%   \begin{entryrow}{<left column metadata>}
+%     ... right column content ...
+%   \end{entryrow}
+\newenvironment{entryrow}[1]{%
+  \par\needspace{4\baselineskip}\vspace{8pt}%
+  \setbox\railbox=\hbox{%
+    \begin{minipage}[t]{\railwidth}
+      \raggedright #1
+    \end{minipage}%
+  }%
+  \noindent
+  \makebox[0pt][l]{%
+    \usebox{\railbox}%
+  }%
+  \begin{adjustwidth}{\dimexpr\railwidth+1em\relax}{0pt}
+    \vspace{\dimexpr-\ht\railbox-\dp\railbox\relax}%
+    \raggedright
+    \setlength{\parskip}{0pt}%
+}{%
+  \end{adjustwidth}%
+  \par
+}
+
+% Left-column job metadata, stacked in display order:
+%   Job Title   (bold)
+%   Company     (italic)
+%   Dates       (lighter color)
+%   Location    (lighter color)
+% Usage: \jobmeta{Job Title}{Company Name}{Date Range}{Location}
+\newcommand{\jobmeta}[4]{%
+  \textbf{#1}\\[2pt]
+  \textit{#2}\\[6pt]
+  {\color{lighttext}#3}\\[2pt]
+  {\color{lighttext}#4}%
+}
+
+% Left-column education metadata: School (bold), Degree (italic), Date (lighter).
+% Usage: \edumeta{Degree}{School}{Date}{Location}
+\newcommand{\edumeta}[4]{%
+  \textbf{#2}\\[2pt]
+  \textit{#1}\\[6pt]
+  {\color{lighttext}#3}\\[2pt]
+  {\color{lighttext}#4}%
+}
+
+% Bullet list environment matching tight spacing of original
+\newlist{resumeitems}{itemize}{1}
+\setlist[resumeitems]{
+  label=\textbullet,
+  leftmargin=*,
+  itemsep=3pt,
+  topsep=2pt,
+  parsep=0pt,
+  partopsep=0pt
+}
+
+% ---------- Import Personal Information ----------
+% REQUIRED: Copy config/personal-info.template.tex to config/personal-info.tex
+% and fill in your information before compiling.
+\input{../../config/personal-info}
+
+\begin{document}
+
+% ============================================================
+% HEADER
+% ============================================================
+
+\begin{minipage}[b]{0.5\linewidth}
+  {\Huge \textbf{\MyName}}\\[2pt]
+  {\large \MyTitle}
+\end{minipage}%
+\begin{minipage}[b]{0.5\linewidth}
+  \raggedleft
+  {\small\color{lighttext}
+    {\MyCity, \MyState}  {\MyPhone}\\
+    \href{mailto:\MyEmail}{\MyEmail}\\
+    \href{https://\MyLinkedIn}{\MyLinkedIn}\\
+    \href{https://\MyGitHub}{\MyGitHub}\\
+  }
+\end{minipage}
+
+\vspace{-5pt}
+
+% ============================================================
+% PROFESSIONAL SUMMARY
+% ============================================================
+\par\vspace{-2pt}%
+\noindent\textcolor{lightgray}{\rule{\textwidth}{0.3pt}}\par\vspace{-8pt}%
+\begin{entryrow}{\bfseries\large Professional Summary}
+% Senior Full-Stack Software Engineer with extensive experience scaling payment platforms and improving operational reliability. Drove platform growth to support thousands of locations and multimillion monthly transactions while maintaining PCI-compliant infrastructure and robust admin controls. Seeking to apply frontend, backend, API design, and systems reliability expertise to build high-availability systems.
+% Senior Full-Stack Software Engineer with a strong background in scaling payment platforms and enhancing operational reliability. Proven track record of driving significant growth in transaction volumes and locations while ensuring PCI compliance. Expertise in frontend and backend development, API design, data modeling, and systems reliability. Committed to building high-availability systems that deliver exceptional user experiences and operational efficiency.
+Full-Stack Software Engineer with senior-level expertise in payment platforms and high-availability systems. Led the redesign of a nationwide contactless payment flow, scaling from $\sim$250 to 2,000+ locations and growing monthly transactions from $\sim$100K to over 1.5M while maintaining PCI compliance. Built a multi-tenant admin portal with role-based access controls that onboarded 1,000+ admins and their users, reducing unauthorized access attempts by 95\%. Seeking to apply these skills to building high-availability systems that deliver exceptional user experiences and operational efficiency.
+\end{entryrow}
+
+% ============================================================
+% EMPLOYMENT HISTORY
+% ============================================================
+\sectionlabel{Employment History}
+
+% ---------------- Company One ----------------
+\begin{entryrow}{\jobmeta{Senior Software Engineer}{Company One}{APR 2021 -- APR 2026}{City, State (Remote)}}
+\begin{resumeitems}
+  \item Led full-stack \textbf{MongoDB}/\textbf{Node.js}/\textbf{Express}/\textbf{Angular} development for nationwide payment flows, enabling growth from $\sim$250 to 2,000+ locations
+  \item Designed payment, admin, profile, and menu \textbf{REST APIs} using \textbf{OpenAPI} contracts and Zod for schema validation, ensuring \textbf{end-to-end type safety}
+  \item Drove monthly payment volume growth from \textbf{$\sim$100K to over 1.5M transactions}
+  \item Designed and built \textbf{multi-tenant} admin portal and \textbf{role-based access control} with permission-aware queries and token validation, onboarding 1,000+ admins, reducing unauthorized access attempts by 95\%
+  \item Integrated payment gateway SDKs into backend to accept credit card, \textbf{Apple Pay}, and \textbf{Google Pay}
+  \item Implemented \textbf{3DS} authentication with \textbf{DPAN/FPAN} extraction to enable secure wallet tokenization
+  \item Maintained fraud detection integration via \textbf{OAuth 2.0}, tuning thresholds to cut fraud by $\sim$34\% with $<$0.5\% false positives
+  \item Sustained \textbf{99.95\% payment API uptime} by adding circuit breakers, retries, and failover routing
+  \item Implemented MongoDB \textbf{geospatial queries} to surface nearby locations and compute distances
+  \item Refactored \textbf{Mongoose aggregation pipelines}, improving query performance by 30\% through targeted optimizations and indexing
+  \item Designed Mongoose \textbf{data models}, schemas, and \textbf{Atlas Search} pipelines with sorted token-based pagination and filters, improving query efficiency and enabling faster data retrieval
+  \item Adopted Angular \textbf{Signals} and \textbf{RxJS} to manage reactive state across payment and profile flows, reducing state-related bugs by 35\% and improving code maintainability
+  \item Used \textbf{Angular Universal} for server-side rendering, improving load performance and SEO for profiles
+  \item Championed comprehensive \textbf{Jest} unit and integration test suites, decreasing new bug introductions by 40\% and enhancing \textbf{CI/CD} pipeline stability by 50\%
+  \item Integrated \textbf{Redis} caching for session and rate-limit data, reducing database load by 60\% and improving API response times by 45\% during peak traffic
+  \item Implemented real-time WebSocket payment notifications using \textbf{Socket.io}, reducing average customer wait time by 55\% and improving satisfaction scores
+  \item Maintained \textbf{PCI DSS Level 1} compliance through annual audits and OWASP Top 10 security training
+  \item Implemented \textbf{Git worktree} workflows and AI-assisted coding to improve release velocity by 3x to 5x
+\end{resumeitems}
+\end{entryrow}
+
+% ---------------- Company Two ----------------
+\begin{entryrow}{\jobmeta{Web Application Developer II}{Company Two}{MAR 2020 -- APR 2021}{City, State (Hybrid)}}
+\begin{resumeitems}
+  \item Transitioned a 3-person Windows engineering team to modern web development, accelerating frontend feature delivery by 40\% and reducing deployment cycles from weeks to days
+  \item Developed \textbf{REST API} backend and \textbf{React} frontend for a project-management app with graphical timelines, enabling operators to reduce project planning time by 30\%
+  \item Documented the architecture, \textbf{data models}, and \textbf{API contracts} for a land-survey planning app using \textbf{Swagger}, providing clear guidance that streamlined development of a new product
+  \item Participated in \textbf{Agile/Scrum} ceremonies and facilitated cross-timezone collaboration between Australia and Canada, ensuring timely delivery of features and alignment across teams
+  \item Converted legacy Windows tools to React frontend components, reducing user training time and improving adoption rates by 75\% through modern, intuitive interfaces
+  \item Implemented WebSocket notifications using \textbf{Socket.io} to provide real-time updates to users
+  \item Extended \textbf{C\#/.NET} backend endpoints and adjusted \textbf{SQL Server} queries to support new UI filters
+  \item Created 150+ end-to-end integration tests with \textbf{Jest} and \textbf{Postman}, catching 90\% of regressions pre-release, reducing production incidents by 60\%
+  \item Built the project management app as a React SPA using \textbf{Redux} and \textbf{Immutable.js} for predictable, immutable state management across complex timeline interactions
+  \item Contributed 25+ features and bug fixes to a company-wide React component library, improving UI consistency across 8 products and reducing duplicate code by 40\%
+\end{resumeitems}
+\end{entryrow}
+
+% ---------------- Company Three ----------------
+\begin{entryrow}{\jobmeta{Full-Stack Web Developer}{Company Three}{FEB 2008 -- OCT 2019}{City, State (Remote)}}
+\begin{resumeitems}
+  \item Designed and owned the backend architecture and infrastructure using \textbf{Node.js}, \textbf{Express}, and \textbf{AWS} services, making key decisions as the sole backend developer alongside the CTO, resulting in a more scalable and maintainable platform
+  \item Migrated the server farm to AWS (\textbf{EC2}, \textbf{RDS}, \textbf{S3}, \textbf{Route53}), implementing auto-scaling, database redundancy, and automated backups, achieving 99.98\% uptime and reducing operational costs by 35\%
+  \item Built Fulfillment Center integration control panel, reducing new integration build time by 85\% (from 3-4 weeks to 3-5 days) and enabling 20+ partner integrations
+  \item Maintained full \textbf{PCI DSS} compliance by hardening \textbf{SQL Server} databases, running regular vulnerability scans, and applying timely patches, preventing security incidents and audit findings
+  \item Implemented multiple payment gateway integrations from scratch, enabling multi-processor checkout and increasing successful transaction rate by $\sim$18\%
+  \item \textbf{Mentored} 8+ junior developers and introduced code-review and \textbf{Git} workflow guidelines over an 11-year tenure, reducing code defects by 45\% and cutting onboarding time from 6 weeks to 2 weeks
+  \item Built \textbf{Node.js}/\textbf{Express} REST APIs processing 500K+ monthly orders in real-time, reducing order failure incidents by 70\% and improving order accuracy to 99.8\%
+  \item Designed normalized \textbf{SQL Server} data models and schemas, ensuring platform data integrity and enabling accurate reporting
+  \item Wrote optimized \textbf{T-SQL} queries and stored procedures that generated complex finance and reconciliation reports, cutting report generation time from 4+ hours to under 1 hour
+  \item Containerized 15+ application services with \textbf{Docker} and \textbf{Kubernetes}, standardizing environments across dev/staging/prod and reducing CI pipeline execution time by 60\%
+  \item Integrated fraud detection with custom risk-scoring rules, reducing chargebacks by $\sim$41\%
+  \item Led the frontend development team to refactor the UI, replacing \textbf{jQuery}-driven patterns with \textbf{ES6+ JavaScript} modules and modern \textbf{CSS} layouts, streamlining component reuse and feature rollout
+\end{resumeitems}
+\end{entryrow}
+
+% ---------------- Company Four ----------------
+\begin{entryrow}{\jobmeta{HL7 Interface Engineer}{Company Four}{JAN 2006 -- FEB 2008}{Los Angeles, CA (On-site)}}
+\begin{resumeitems}
+  \item Developed \textbf{SQL} stored procedures and functions to support \textbf{HL7} interface processing and data transformations
+  \item Configured \textbf{MLLP}-based \textbf{HL7 v2} interfaces between \textbf{EHR} and lab systems, reducing message failures and retries
+  \item Parsed and mapped \textbf{HL7 ADT} and \textbf{ORU} segments using custom transformation rules to match hospital data models
+  \item Coordinated with clinical analysts and vendor teams to resolve field mapping and semantic mismatches in feeds
+  \item Implemented message acknowledgement tracking with logging and alerting to shorten incident triage time for support
+  \item Integrated \textbf{PACS} workflows using \textbf{ORM/ORR} for imaging order routing, \textbf{ORU} for radiology result delivery, \textbf{MDM T02/T04} for report document transmission, and \textbf{SIU S12/S13/S15} for imaging appointment scheduling
+  \item Built \textbf{HIS} integrations handling \textbf{ADT A08/A28/A31} patient update events, \textbf{BAR P01/P02/P05} billing account transactions, \textbf{DFT P03} charge feeds from clinical systems, \textbf{MFN} master file sync for providers and locations, and \textbf{QRY/DSR} patient lookup flows for legacy HIS environments
+  \item Developed \textbf{LIS} interfaces supporting \textbf{OML\textasciicircum{}O21} lab orders, \textbf{ORU\textasciicircum{}R01} result delivery with strict \textbf{ACK/NAK} handling, \textbf{OUL R21/R22/R23} point-of-care observations, \textbf{SSU/SSR} specimen tracking, and \textbf{LSU} analyzer status feeds from automated lab instruments
+\end{resumeitems}
+\end{entryrow}
+
+% ============================================================
+% EDUCATION
+% ============================================================
+\sectionlabel{Education}
+
+\begin{entryrow}{\edumeta{BS in Computer Science}{University of America}{DEC 2000}{City, State}}
+Computer Science program covering software development, algorithms, data structures, and system design. Coursework included object-oriented programming, database systems, operating systems, computer networks, software engineering principles, and web application development.
+\end{entryrow}
+
+% ============================================================
+% SKILLS
+% ============================================================
+\par\vspace{0pt}%
+\noindent\textcolor{lightgray}{\rule{\textwidth}{0.3pt}}\par\vspace{-8pt}%
+\begin{entryrow}{\bfseries\large Skills}
+PCI DSS | Claude Code | Node.js | Express.js | JavaScript/ES6 | TypeScript | REST API Design | API Integrations | WebSockets | Socket.io | Mongoose ODM | Mongoose Aggregation Pipelines | MongoDB | MongoDB Atlas Search | SQL (T-SQL/MySQL) | MS SQL Server | Redis | Angular | RxJS | Observables | Signals API | React | Redux | HTML5/CSS3 | CSS Grid/Subgrid | CSS Flex | AWS (EC2/RDS/S3) | Docker | Git | GitHub | Jest | Postman | Swagger | OpenAPI | C\#/.NET | C/C++ | OAuth
+\end{entryrow}
+
+% ============================================================
+% LANGUAGES
+% ============================================================
+\par\vspace{0pt}%
+\noindent\textcolor{lightgray}{\rule{\textwidth}{0.3pt}}\par\vspace{-8pt}%
+\begin{entryrow}{\bfseries\large Languages}
+English (Native)
+\end{entryrow}
+
+\end{document}

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs -n1 basename)",
+      "Write(applied/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
