@@ -67,7 +67,7 @@ Transform the current Claude Code-based job application workflow into a modern, 
 | Data Type | Storage Location | Rationale |
 |-----------|-----------------|-----------|
 | User-specific data (personal info, resume variants, applications) | **MongoDB Atlas** | Dynamic, user-scoped, easy to query |
-| Global prompts (resume-customization.md, etc.) | **Files** (`/backend/prompts/`) | Shared across users, version-controlled |
+| Global prompts (resume-customization.md, etc.) | **Files** (`/apps/api/prompts/`) | Shared across users, version-controlled |
 | Binary files (signatures, PDFs) | **AWS S3** | Scalable, CDN-ready, per-user isolation |
 | **Resume structure** | **MongoDB Atlas** (as JSON) | Drag-drop bullets, LLM-friendly, multi-format export |
 | **LaTeX artifacts** | **MongoDB Atlas** (generated from structure) | Cached, regenerated on content changes |
@@ -222,7 +222,7 @@ npm install react-pdf  # or use iframe for PDF preview
 - [ ] Test round-trip: LaTeX → Parse → Render → Should match
 
 ### Week 4: Global Prompts System
-- [ ] Copy `.claude/prompts/*.md` → `/backend/prompts/`
+- [ ] Copy `.claude/prompts/*.md` → `/apps/api/prompts/`
 - [ ] Backend: `PromptLoader` utility (loads and caches prompts)
 - [ ] Frontend: Read-only prompts viewer
 
@@ -351,8 +351,8 @@ docker-compose up
 # - Mongo Express: http://localhost:8081 (DB browser UI)
 
 # Hot-reload enabled for rapid development:
-# - Edit /frontend/src/*.tsx → Browser auto-refreshes
-# - Edit /backend/app/*.py → FastAPI auto-reloads
+# - Edit /apps/web/src/*.tsx → Browser auto-refreshes
+# - Edit /apps/api/app/*.py → FastAPI auto-reloads
 ```
 
 ### Production Deployment (Cloud-Native)
@@ -390,7 +390,7 @@ fly secrets set MONGODB_URL=... ANTHROPIC_API_KEY=... S3_BUCKET=...
 
 **CORS Configuration** (required for separate frontend/backend domains):
 ```python
-# backend/app/main.py
+# apps/api/app/main.py
 from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
@@ -459,7 +459,7 @@ https://api.job-forge.com    → Fly.io (configure DNS CNAME)
 1. ✅ Create ROADMAP.md (detailed milestones) → **Done**
 2. ✅ Create PLAN.md (this document) → **Done**
 3. ⏭️ **Next**: Initialize project structure (Milestone 1.1)
-   - Create `/frontend`, `/backend`, `/docker` directories
+   - Create `/apps/web`, `/apps/api`, `/docker` directories
    - Create `docker-compose.yml`
    - Initialize Vite + React app
    - Initialize FastAPI app

@@ -50,7 +50,7 @@ Transform the Claude Code-based job application workflow into a modern web appli
 
 ### Data Storage Strategy
 - **User-specific data** → MongoDB Atlas (personal info, resume variants, applications, custom prompts)
-- **Global/shared data** → Files in `/backend/prompts` directory (resume-customization.md, cover-letter-generation.md, etc.)
+- **Global/shared data** → Files in `/apps/api/prompts` directory (resume-customization.md, cover-letter-generation.md, etc.)
 - **Resume structure** → MongoDB Atlas (structured JSON: bullets, jobs, summary)
 - **LaTeX artifacts** → MongoDB Atlas (generated from structure + template, cached)
 - **Binary files** → AWS S3 buckets (organized per user: `/{userId}/signatures/`, `/{userId}/pdfs/`)
@@ -92,7 +92,7 @@ Transform the Claude Code-based job application workflow into a modern web appli
 ### Milestone 1.1: Project Setup & Infrastructure (Week 1)
 **Goal**: Get development environment running with hot-reload
 
-- [ ] Initialize monorepo structure (`/frontend`, `/backend`, `/docker`)
+- [ ] Initialize monorepo structure (`/apps/web`, `/apps/api`, `/docker`)
 - [ ] Create `docker-compose.yml` with 4 services:
   - Frontend (Vite dev server, port 5173)
   - Backend (FastAPI with auto-reload, port 8000)
@@ -100,7 +100,7 @@ Transform the Claude Code-based job application workflow into a modern web appli
   - Mongo Express (port 8081, dev only)
 - [ ] Frontend: Initialize Vite + React + TypeScript + Tailwind + Redux Toolkit
 - [ ] Backend: Initialize FastAPI + Motor + Beanie + Pydantic
-- [ ] Configure volume mounts for hot-reload (frontend `/src`, backend `/app`)
+- [ ] Configure volume mounts for hot-reload (apps/web `/src`, apps/api `/app`)
 - [ ] Setup environment variables (`.env` files for local dev)
 - [ ] Create basic "Hello World" endpoints and UI
 - [ ] Verify hot-reload works for both frontend and backend
@@ -371,7 +371,7 @@ Transform the Claude Code-based job application workflow into a modern web appli
 - [ ] Install dependencies:
   - `pip install strawberry-graphql[fastapi]`
   - `pip install strawberry-graphql[debug-server]` (GraphQL Playground)
-- [ ] Create `/backend/graphql/` module:
+- [ ] Create `/apps/api/graphql/` module:
   - `schema.py` - Main schema definition
   - `types.py` - GraphQL types (ResumeVariant, Experience, Education, etc.)
   - `queries.py` - Query resolvers
@@ -611,12 +611,12 @@ Transform the Claude Code-based job application workflow into a modern web appli
 **Goal**: Backend loads global prompt files for LLM context
 
 #### Backend Tasks
-- [ ] Create `/backend/prompts/` directory
+- [ ] Create `/apps/api/prompts/` directory
 - [ ] Copy existing files from `.claude/prompts/`:
   - `resume-customization.md`
   - `cover-letter-generation.md`
   - `fintech-healthtech-positioning.md`
-- [ ] Copy `.claude/skills/job-application-helper.md` → `/backend/prompts/`
+- [ ] Copy `.claude/skills/job-application-helper.md` → `/apps/api/prompts/`
 - [ ] Create `PromptLoader` utility class:
   - `load_prompt(filename: str) -> str` (reads file, caches in memory)
   - `get_all_prompts() -> dict[str, str]` (returns all prompts as dict)
@@ -1055,7 +1055,7 @@ app.add_middleware(
 
 5. ✅ **Repository Structure**: Monorepo
    - Easier development (shared types, single deploy)
-   - Both services in one repo: `/frontend`, `/backend`
+   - Both services in one repo: `/apps/web`, `/apps/api`
 
 6. ✅ **Testing Strategy**: Integration + E2E
    - Integration tests for API endpoints (pytest)
@@ -1069,20 +1069,20 @@ app.add_middleware(
 1. **Setup project structure**:
    ```
    job-forge/
-   ├── frontend/          # Vite + React app
-   ├── backend/           # FastAPI app
+   ├── apps/
+   │   ├── web/           # Vite + React app
+   │   └── api/           # FastAPI app
    ├── docker/            # Dockerfiles
    ├── docker-compose.yml
-   ├── prompts/           # Global prompt files (symlink or copy from .claude/prompts)
    ├── scripts/           # Migration scripts
    └── README.md
    ```
 
 2. **Create Docker Compose file** with 4 services (frontend, backend, MongoDB, Mongo Express)
 
-3. **Initialize frontend** (`npm create vite@latest frontend -- --template react-ts`)
+3. **Initialize frontend** (`npm create vite@latest apps/web -- --template react-ts`)
 
-4. **Initialize backend** (`fastapi` project with `poetry` or `pip`)
+4. **Initialize backend** (`fastapi` project with `poetry` or `pip` in apps/api/)
 
 5. **Setup Git branching strategy** (main, develop, feature branches)
 
