@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(xargs -n1 basename)",
+      "Bash(mkdir -p applied/**)",
       "Write(applied/**)"
     ],
     "deny": [],

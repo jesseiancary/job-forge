@@ -60,7 +60,6 @@ Example: `applied/tech-corp/` (for "TechCorp")
    - What sections will be modified
    - What will be emphasized
    - What language/keywords will be added
-
 7. **Wait for user approval** before making changes
 8. After approval, copy resume to `applied/{company-slug}/{company-slug}-resume.tex` with modifications
 
@@ -70,19 +69,56 @@ Example: `applied/tech-corp/` (for "TechCorp")
 
 If user answered "no", skip to Step 6.
 
-1. Read `config/PERSONAL_INFO.md` for contact information (if needed)
-2. Read `resumes/sample/cover-letter.tex` template
-3. Read `CLAUDE.md` for experience context
-4. Use `.claude/prompts/cover-letter-generation.md` guidelines
-5. Generate cover letter body text (3-4 paragraphs) tailored to:
-   - Company mission and values
-   - Specific role requirements
-   - Relevant experience highlights
-   - Technology stack alignment
+### Analysis Phase (CRITICAL - Do This First!)
 
-6. Replace `COMPANY_NAME` with actual company name in salutation
-7. Replace `BODY_TEXT` with generated paragraphs
-8. Write to `applied/{company-slug}/{company-slug}-cover-letter.tex`
+1. **Extract company names from selected resume variant**
+   - Read `resumes/{variant}/resume.tex` to get ACTUAL company names
+   - Example: "Up 'n go Contactless Payments", "Infomercial.tv", "Hexagon Mining"
+   - Do NOT use placeholder names like "Payment Platform Company" or "E-commerce Platform Company"
+
+2. **Deeply analyze the job description**
+   - Exact role title
+   - Company mission/values
+   - Technology stack (match their terminology)
+   - Key responsibilities they emphasize
+   - Scale/impact signals
+   - Company culture (mission-driven? technical/craft? high-velocity?)
+   - Domain (HealthTech, FinTech, SaaS, etc.)
+
+3. **Map experience to their needs**
+   - Select 4-6 MOST relevant achievements that match their requirements
+   - Which metrics align with their scale?
+   - Which technologies match their stack?
+   - What narrative arc connects your experience to their challenge?
+
+4. **Read context files**
+   - Read `config/PERSONAL_INFO.md` for contact information (if needed)
+   - Read `CLAUDE.md` for experience context and metrics reference
+   - Read `.claude/prompts/cover-letter-generation.md` as phrasing pattern guide (NOT template!)
+
+### Generation Phase
+
+5. **Write fresh, original prose** tailored to THIS specific role:
+   - Paragraph 1 (2-3 sentences): Opening hook connecting their challenge to your experience
+   - Paragraph 2 (3-4 sentences): Recent role with 3-4 MOST relevant achievements
+   - Paragraph 3 (2-3 sentences): Earlier experience OR mission/culture closing
+   - Use real company names from resume variant
+   - Match their language from the JD
+   - Total: ~200-250 words
+
+6. **Build the cover letter file**
+   - Read `resumes/sample/cover-letter.tex` template
+   - Replace `COMPANY_NAME` with actual company name in salutation
+   - Replace `BODY_TEXT` with your generated paragraphs
+   - Write to `applied/{company-slug}/{company-slug}-cover-letter.tex`
+
+**IMPORTANT:**
+- **Generate from scratch** - Do NOT copy example paragraphs from guidelines and do find-replace
+- **Use guidelines as pattern reference** - Learn phrasing styles, don't template
+- **Use real company names** - Extract from resume variant, never use placeholders
+- **Be highly selective** - Choose 4-6 most relevant achievements, not everything
+- **Match their language** - Use exact terms and phrases from their JD
+- **Show understanding** - Demonstrate you researched their product/mission
 
 **Note**: The cover letter template uses `\input{../config/personal-info}` to import contact information automatically, so you don't need to manually replace personal info fields.
 
