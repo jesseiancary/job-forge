@@ -1,0 +1,69 @@
+services:
+  # Frontend - React + Vite
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: ../../docker/web.Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/web/src:/app/src:ro
+      - ./apps/web/index.html:/app/index.html:ro
+      - ./apps/web/vite.config.ts:/app/vite.config.ts:ro
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - api
+    networks:
+      - job-forge-network
+
+  # Backend - FastAPI
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: ../../docker/api.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/api/app:/app/app:ro
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - MONGODB_DB_NAME=job_forge
+      - DEBUG=true
+      - ENVIRONMENT=development
+    depends_on:
+      - mongodb
+    networks:
+      - job-forge-network
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:8
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=job_forge
+    networks:
+      - job-forge-network
+
+  # Mongo Express - Database UI (dev only)
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://mongodb:27017/
+      - ME_CONFIG_BASICAUTH=false
+    depends_on:
+      - mongodb
+    networks:
+      - job-forge-network
+
+networks:
+  job-forge-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:

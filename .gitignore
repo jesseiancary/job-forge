@@ -28,3 +28,54 @@
 
 # Ignore personal signature (keep sample only)
 /signature.png
+
+# ============================================
+# Monorepo - Web Application
+# ============================================
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Frontend (Node.js / Vite)
+node_modules/
+dist/
+.vite/
+*.local
+.cache/
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Backend (Python / Poetry)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+.poetry/
+poetry.lock
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Docker
+docker-compose.override.yml
+*.env.docker
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

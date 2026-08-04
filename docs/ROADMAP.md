@@ -89,23 +89,34 @@ Transform the Claude Code-based job application workflow into a modern web appli
 
 ## Phase 1: MVP (Single-User, Core Functionality)
 
-### Milestone 1.1: Project Setup & Infrastructure (Week 1)
+### Milestone 1.1: Project Setup & Infrastructure (Week 1) ✅ COMPLETED
 **Goal**: Get development environment running with hot-reload
 
-- [ ] Initialize monorepo structure (`/apps/web`, `/apps/api`, `/docker`)
-- [ ] Create `docker-compose.yml` with 4 services:
+- [x] Initialize monorepo structure (`/apps/web`, `/apps/api`, `/docker`)
+- [x] Create `docker-compose.yml` with 4 services:
   - Frontend (Vite dev server, port 5173)
   - Backend (FastAPI with auto-reload, port 8000)
   - MongoDB (port 27017)
   - Mongo Express (port 8081, dev only)
-- [ ] Frontend: Initialize Vite + React + TypeScript + Tailwind + Redux Toolkit
-- [ ] Backend: Initialize FastAPI + Motor + Beanie + Pydantic
-- [ ] Configure volume mounts for hot-reload (apps/web `/src`, apps/api `/app`)
-- [ ] Setup environment variables (`.env` files for local dev)
-- [ ] Create basic "Hello World" endpoints and UI
-- [ ] Verify hot-reload works for both frontend and backend
+- [x] Frontend: Initialize Vite + React + TypeScript + Tailwind CSS 4 (Redux Toolkit deferred to later milestone)
+- [x] Backend: Initialize FastAPI + Motor + Beanie + Pydantic
+- [x] Configure volume mounts for hot-reload (apps/web/src, apps/api/app)
+- [x] Setup environment variables (`.env.example` files for local dev)
+- [x] Create basic "Hello World" endpoints and UI
+- [x] Verify hot-reload works for both frontend and backend
+- [x] Setup Git configuration (`.gitignore`, `.pre-commit-config.yaml`)
+- [x] Create documentation ([apps/README.md](../apps/README.md))
 
-**Deliverable**: `docker-compose up` starts all services with working hot-reload
+**Deliverable**: `docker-compose up` starts all services with working hot-reload ✅
+
+**Completion Date**: 2026-06-28
+
+**Notes**:
+- Used Python 3.12-3.13 compatibility (system has 3.12, Docker uses 3.13-slim)
+- Used Node.js 24 as requested
+- Tailwind CSS 4.3.1 (CSS-first configuration with @import)
+- Redux Toolkit setup deferred until needed (Milestone 1.3+)
+- Pre-commit hooks configured but not installed due to system permissions
 
 ---
 
