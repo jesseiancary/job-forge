@@ -120,7 +120,7 @@ Transform the Claude Code-based job application workflow into a modern web appli
 
 ---
 
-### Milestone 1.2: Database Models & Schemas (Week 1-2)
+### Milestone 1.2: Database Models & Schemas (Week 1-2) ✅ COMPLETED
 **Goal**: Define MongoDB collections and Pydantic schemas for structured resume data
 
 #### Collections
@@ -259,11 +259,22 @@ Transform the Claude Code-based job application workflow into a modern web appli
    }
    ```
 
-- [ ] Create Beanie Document models for all collections
-- [ ] Create Pydantic schemas for API requests/responses
-- [ ] Setup database initialization script (indexes, constraints)
+- [x] Create Beanie Document models for all collections
+- [x] Create Pydantic schemas for API requests/responses
+- [x] Setup database initialization script (indexes, constraints)
 
-**Deliverable**: Database models defined, API can create/read documents
+**Deliverable**: Database models defined, API can create/read documents ✅
+
+**Completion Date**: 2026-08-03
+
+**Notes**:
+- Foreign-key-style fields (`user_id`, `resume_variant_id`, `template_id`, `application_id`) are `str`, not `ObjectId` as shown in the schemas above — matches `.claude/rules/mongodb-patterns.md`'s worked example and avoids ObjectId (de)serialization friction at the FastAPI JSON boundary
+- Dropped the `motor` dependency (pinned in Milestone 1.1) — it's incompatible with `beanie ^2.1.0`, which has fully moved to pymongo's native async client (`pymongo.AsyncMongoClient`) and no longer proxies through Motor at all. This never surfaced in 1.1 since nothing called `init_beanie` yet. `.claude/rules/mongodb-patterns.md`'s `get_motor_collection()` examples are now stale (use `get_pymongo_collection()`) — needs a follow-up docs fix
+- `Application`'s LLM/PDF-generated fields (`resume_content`, `resume_latex`, PDF S3 keys, cover-letter fields) are `Optional` rather than required — a freshly-created `"draft"` application won't have them until the Milestone 1.9 generation pipeline exists
+- `latex_templates` seed data deferred to Milestone 1.4 (needs the LaTeX parser, which doesn't exist yet)
+- Database init happens via a FastAPI `lifespan` hook (`app/db.py` + `app/main.py`) calling `init_beanie`, which creates all indexes automatically — no separate CLI script needed
+- Added 21 tests (`apps/api/tests/`) covering model validation, index presence, and unique-constraint enforcement against a real MongoDB test database (`job_forge_test`), no mocks
+- No routers/endpoints yet — that starts in Milestone 1.3
 
 ---
 
@@ -1142,4 +1153,4 @@ app.add_middleware(
 
 **End of Roadmap**
 
-_Last updated: 2026-06-27_
+_Last updated: 2026-08-03_
