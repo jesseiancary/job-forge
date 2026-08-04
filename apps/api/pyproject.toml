@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = "Job-Forge API"
+authors = ["Jesse Ian Cary <jesseiancary@gmail.com>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.14"
+fastapi = "^0.138.1"
+uvicorn = {extras = ["standard"], version = "^0.49.0"}
+motor = "^3.7.1"
+beanie = "^2.1.0"
+pydantic = "^2.13.4"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
