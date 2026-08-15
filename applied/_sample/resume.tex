@@ -1,0 +1,487 @@
+% ============================================================
+% Jesse Ian Cary - Resume (LaTeX)
+% Variant: Full-Stack
+% Compile with: xelatex full-stack-fintech.tex (run twice if using hyperref refs)
+% ============================================================
+\documentclass[10pt]{article}
+
+% ---------- Page setup ----------
+\usepackage[letterpaper, margin=0.325in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\pagestyle{empty} % Remove page numbers
+
+% ---------- Fonts ----------
+% Using Calibri via fontspec (requires XeLaTeX)
+\usepackage{fontspec}
+\setmainfont{Calibri}
+
+% Fallback if Calibri not available (uncomment these and comment above):
+% \usepackage[default]{sourcesanspro}
+% \usepackage[T1]{fontenc}
+
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{changepage}
+\usepackage{needspace}
+\usepackage{environ} % lets us capture the entryrow body as \BODY to measure its height
+
+% Prevent hyphenation and word breaks
+\tolerance=1
+\emergencystretch=\maxdimen
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\raggedright
+
+% ---------- Colors ----------
+\definecolor{darktext}{RGB}{30,30,30}
+\definecolor{lighttext}{RGB}{130,130,130}
+\color{darktext}
+
+% ---------- Hyperref setup (no boxes, subtle color) ----------
+\hypersetup{
+  colorlinks=true,
+  linkcolor=lighttext,
+  urlcolor=lighttext,
+}
+
+% ---------- Spacing ----------
+\setlength{\parindent}{0pt}
+\setlength{\topsep}{0pt}
+
+% ============================================================
+% TWO-COLUMN "RAIL" LAYOUT BUILDING BLOCKS (page-breakable)
+% ============================================================
+% Left column (~28% width) carries per-entry metadata: job title /
+% company / dates / location, or degree / school / date. Right column
+% carries the actual content: bullets, or a description paragraph.
+% A full-width rule sits above each entry.
+%
+% Implementation notes (the hard-won parts):
+% 1. A true minipage/tabular approach can't break across pages, which
+%    breaks long sections (e.g. Employment History spanning multiple
+%    pages). So the right-column content is laid out as a normal
+%    indented block (flows/breaks naturally), and the left-column
+%    metadata is placed in the margin via \makebox.
+% 2. A naive \makebox[0pt][r]{\parbox[t]{...}{multi-line metadata}}
+%    looks fine for short (1-2 line) labels, but for a 4-line label
+%    (Title/Company/Dates/Location) the box's full DEPTH gets counted
+%    by TeX's interline spacing, pushing the following line (the first
+%    bullet) down by roughly the box's height. Fix: force the box's
+%    depth to 0pt via \raisebox{0pt}[\ht][0pt]{...} while preserving
+%    its real height, so alignment is correct AND the page-builder
+%    still reserves the correct vertical space.
+% 3. Because the metadata box's height is now "hidden" inside a
+%    same-line construct, ordinary LaTeX orphan/widow avoidance no
+%    longer naturally keeps a job's header attached to its first
+%    bullet across a page break. \needspace reserves room for the
+%    rule + a few lines before starting a new entry, so an entry's
+%    header doesn't get stranded alone at the bottom of a page.
+% 4. Hiding the box's depth (point 2) also hides it from LaTeX's
+%    normal vertical-space bookkeeping, so when the left column
+%    (title/company/dates/tech stack) is taller than the right
+%    column's content, nothing pushes the following entry down and
+%    the two rows collide. Fix: use the `environ` package to capture
+%    the right-column body as \BODY, typeset it once into a throwaway
+%    box to measure its real height, then (after typesetting it again
+%    for real, so it still flows/breaks normally) pad with \vspace for
+%    whatever shortfall remains against the left column's height. This
+%    compares two statically-measured box heights rather than trying
+%    to read \pagetotal mid-paragraph, which is unreliable (the page
+%    builder doesn't update it synchronously).
+\newlength{\railwidth}
+% Set the left column width here. The right column will automatically take the remaining space.
+\setlength{\railwidth}{0.24\textwidth}
+\newbox\railbox
+\newbox\measurebox
+\newdimen\railfullheight
+\newdimen\rightfullheight
+\newdimen\entrypad
+
+% Generic entry row: left column = metadata (arg #1), right column =
+% content (the environment body). A full-width rule sits above the row.
+% The metadata is placed in the margin via \makebox, and content flows
+% in an indented block that can break across pages.
+% Usage:
+%   \begin{entryrow}{<left column metadata>}
+%     ... right column content ...
+%   \end{entryrow}
+\NewEnviron{entryrow}[2][-8pt]{%
+  \par\needspace{4\baselineskip}\vspace{#1}%
+  \setbox\railbox=\hbox{%
+    \begin{minipage}[t]{\railwidth}
+      \raggedright #2
+    \end{minipage}%
+  }%
+  \railfullheight=\ht\railbox
+  \advance\railfullheight by \dp\railbox
+  % Throwaway measurement of the right column at its real (post-indent)
+  % width, so we know its total height before deciding on padding.
+  \setbox\measurebox=\hbox{%
+    \begin{minipage}[t]{\dimexpr\textwidth-\railwidth-1em\relax}
+      \raggedright
+      \setlength{\parskip}{0pt}%
+      \BODY
+    \end{minipage}%
+  }%
+  \rightfullheight=\ht\measurebox
+  \advance\rightfullheight by \dp\measurebox
+  \entrypad=\railfullheight
+  \advance\entrypad by -\rightfullheight
+  \noindent
+  \makebox[0pt][l]{%
+    \raisebox{-12pt}[\ht\railbox][0pt]{\usebox{\railbox}}%
+  }%
+  \begin{adjustwidth}{\dimexpr\railwidth+1em\relax}{0pt}
+    \raggedright
+    \setlength{\parskip}{0pt}%
+    \BODY
+  \end{adjustwidth}%
+  \par
+  \ifdim\entrypad>0pt
+    \vspace{\entrypad}%
+  \fi
+}
+
+% \sectionlabel{Title} prints a small standalone section heading
+% (e.g. "Employment History"). It does NOT repeat per entry --
+% call it once before the first \jobentry/\eduentry/etc. in a section.
+\newcommand{\sectionlabel}[1]{%
+  \par\vspace{-8pt}%
+  \noindent\textcolor{lightgray}{\rule{\textwidth}{0.3pt}}\par\vspace{-2pt}%
+  \noindent{\bfseries\large #1}\par\vspace{-4pt}%
+}
+
+% Left-column skills metadata, stacked in display order:
+%   Skill Group Title   (bold)
+% Usage: \skillsmeta{Skill Group Title}
+\newcommand{\skillsmeta}[1]{%
+  \textbf{#1}%
+}
+
+% Left-column project metadata, stacked in display order:
+%   Project Title   (bold)
+%   Dates           (lighter color)
+%   Tech Stack      (lighter color, underlined title)
+% Usage: \projectmeta{Project Title}{Company Name}{Date Range}{Location}{Tech Stack}
+\newcommand{\projectmeta}[3]{%
+  \textbf{#1}\\
+  \textit{#2}\\[4pt]
+  % {\color{lighttext}#2}\\[4pt]
+  {\underline{\color{lighttext}Tech Stack}}\\
+  {\color{lighttext}#3}%
+}
+
+% Left-column job metadata, stacked in display order:
+%   Job Title   (bold)
+%   Company     (italic)
+%   Dates       (lighter color)
+%   Location    (lighter color)
+%   Tech Stack  (lighter color, underlined title)
+% Usage: \jobmeta{Job Title}{Company Name}{Date Range}{Location}{Tech Stack}
+\newcommand{\jobmeta}[5]{%
+  \textbf{#1}\\
+  \textit{#2}\\[4pt]
+  {\color{lighttext}#3}\\
+  {\color{lighttext}#4}\\[4pt]
+  % {\textit{\color{lighttext}#5}}\\[4pt]
+  {\underline{\color{lighttext}Tech Stack}}\\
+  {\color{lighttext}#5}%
+}
+
+% Left-column education metadata: School (bold), Degree (italic), Date (lighter).
+% Usage: \edumeta{Degree}{School}{Date}{Location}
+\newcommand{\edumeta}[4]{%
+  \textbf{#2}\\[2pt]
+  \textit{#1}\\[6pt]
+  {\color{lighttext}#3}\\
+  {\color{lighttext}#4}%
+}
+
+% Bullet list environment
+\newlist{resumeitems}{itemize}{1}
+\setlist[resumeitems]{
+  label=\textbullet,
+  leftmargin=-1pt,
+  itemsep=4pt,
+  topsep=2pt,
+  parsep=0pt,
+  partopsep=0pt
+}
+
+% ---------- Basic Information ----------
+\newcommand{\MyName}{Jesse Ian Cary}
+% \newcommand{\MyTitle}{Senior Software Engineer | Payments Platform \& Web Architecture}
+\newcommand{\MyTitle}{Full‐Stack System Architect}
+
+% ---------- Contact Information ----------
+\newcommand{\MyCity}{City}
+\newcommand{\MyState}{State}
+\newcommand{\MyPhone}{(555) 555-55555}
+\newcommand{\MyEmail}{youremail@gmail.com}
+
+% ---------- Professional Links ----------
+\newcommand{\MyLinkedIn}{linkedin.com/in/yourprofile}
+\newcommand{\MyGitHub}{github.com/yourprofile}
+\newcommand{\MyYouTube}{youtube.com/yourprofile}
+
+\begin{document}
+
+% ============================================================
+% HEADER
+% ============================================================
+
+\begin{minipage}[b]{0.5\linewidth}
+  {\Huge \textbf{\MyName}}\\[2pt]
+  {\large \MyTitle}
+\end{minipage}%
+\begin{minipage}[b]{0.5\linewidth}
+  \raggedleft
+  {\small\color{lighttext}
+    {\MyCity, \MyState}  {\MyPhone}\\
+    \href{mailto:\MyEmail}{\MyEmail}\\
+    \href{https://\MyLinkedIn}{\MyLinkedIn}\\
+    \href{https://\MyGitHub}{\MyGitHub}\\
+  }
+\end{minipage}
+
+% ============================================================
+% PROFESSIONAL SUMMARY
+% ============================================================
+\par\vspace{-8pt}%
+\noindent\textcolor{lightgray}{\rule{\textwidth}{0.3pt}}\par\vspace{-6pt}%
+\begin{entryrow}{\bfseries\large Professional Summary}
+  % Senior Software Engineer with 18 years of experience building scalable, user-focused web applications and payment platforms, with strong expertise in React, TypeScript, frontend architecture, API integration, and end-to-end product engineering. Experienced in translating product requirements into intuitive, maintainable user experiences while partnering closely with product, design, and backend teams. Proven technical leader with a focus on architecture, engineering standards, observability, testing, performance, and mentoring.
+  Senior Software Engineer with 18 years of experience building scalable web applications and payment platforms, with expertise in React, TypeScript, frontend architecture, API integration, and end-to-end product engineering. Experienced in translating product requirements into intuitive user experiences while partnering with product, design, and backend teams. Technical leader focused on architecture, engineering standards, observability, testing, and mentoring.
+\end{entryrow}
+
+% ============================================================
+% SKILLS
+% ============================================================
+\sectionlabel{Skills}
+
+% Backend Development
+\begin{entryrow}[-10pt]{\skillsmeta{Backend Development}}
+  Asynchronous Processing |
+  Background Jobs |
+  Queue-Based Processing |
+  Caching |
+  Input Validation |
+  % Python |
+  RESTful API Design |
+  WebSockets |
+  Audit Logging
+\end{entryrow}
+
+% Frontend & Product Engineering
+\begin{entryrow}[-10pt]{\skillsmeta{Frontend Development}}
+  Responsive \& Accessible UI |
+  Data-Driven UI |
+  Component Libraries |
+  Design Systems
+\end{entryrow}
+
+% Backend & API Engineering
+\begin{entryrow}[-10pt]{\skillsmeta{Architecture \& Engineering}}
+  Scalable Architecture |
+  API Integration |
+  End-to-End Feature Development |
+  Performance \& Reliability |
+  Architecture \& Technical Design |
+  Coding \& Testing Standards
+\end{entryrow}
+
+% Cloud & DevOps
+\begin{entryrow}[-10pt]{\skillsmeta{Leadership \& Collaboration}}
+  Cross-Functional Collaboration |
+  Technical Leadership |
+  Mentoring |
+  Requirements Analysis
+\end{entryrow}
+
+% ============================================================
+% PERSONAL PROJECTS
+% ============================================================
+\sectionlabel{Personal Projects}
+
+% ---------------- Plinth ----------------
+\begin{entryrow}
+  {\projectmeta
+    {Sample Project}
+    {github.com/yourprofile/sample}
+    {
+      TypeScript\\
+      React\\
+      Vite\\
+      TanStack Query\\
+      Tailwind CSS\\
+      Vitest\\
+      GitHub Actions\\
+    }
+  }
+  \begin{resumeitems}
+    \item Architected a production-grade multi-tenant SaaS starter implementing tenant-isolated RBAC, invitation flows, and API key management with REST endpoints documented using OpenAPI 3.1.
+    \item Designed JWT-based auth with httpOnly refresh token rotation, cursor-based pagination, and a double-submit-cookie CSRF scheme, achieving a 98/100 security audit score under OWASP Top 10.
+    \item Drove test coverage to 90\%+ with integration-first testing, including horizontal/vertical privilege-escalation and cross-tenant isolation scenarios.
+    \item Implemented defense-in-depth security controls (rate limiting, SHA-256 hashed API keys/invitation tokens, bcrypt password storage) validated against OWASP Top 10.
+    \item Established a structured Claude Code workflow (custom agents, skills, and pre-commit security/lint hooks) to enforce architectural and security conventions across AI contributions to the codebase.
+  \end{resumeitems}
+\end{entryrow}
+
+% ============================================================
+% EMPLOYMENT HISTORY
+% ============================================================
+\sectionlabel{Employment History}
+
+% ---------------- Up 'n go ----------------
+\begin{entryrow}
+  {\jobmeta
+    {Senior Software Engineer}
+    {Up 'n go Contactless Payments}
+    {APR 2021 -- APR 2026}
+    {City, ST (Remote)}
+    % {
+    %   Platform Architecture\\
+    %   Payments Infrastructure
+    % }
+    {
+      Node.js\\
+      Express\\
+      TypeScript\\
+      JavaScript (ES6+)\\
+      MongoDB\\
+      Mongoose ODM\\
+      Angular\\
+      Jest\\
+      OpenAPI\\
+      Zod\\
+      Redis Cache/PubSub\\
+      Socket.io\\
+      Docker\\
+      Kount 360\\
+      OpenTelemetry
+    }
+  }
+  \begin{resumeitems}
+    % Foundation
+    \item Transformed an early-stage payment app into a mature, scalable \textbf{PCI DSS Level 1 compliant SaaS platform} by partnering with executive leadership to establish the architecture, engineering standards, and technical foundation as the \textbf{first full-time engineering hire}.
+    
+    % Core Platform Architecture
+    \item Modernized restaurant onboarding and management by replacing source-controlled configuration with a \textbf{multi-tenant administration platform}, designing \textbf{migration tooling} and \textbf{feature-flagged} rollout strategies that enabled incremental adoption with minimal operational risk.
+    \item Enabled secure delegated administration across franchise organizations and multi-location operators by architecting a flexible \textbf{RBAC system with hierarchical tenant relationships} and fine-grained permissions.
+    
+    % Platform Scaling
+    \item Scaled the platform from approximately \textbf{250 to more than 2,000 restaurant locations} while increasing monthly transaction volume from \textbf{~100K to over 1.5M}, achieving \textbf{99.9\% uptime} through architectural improvements and full-stack development across multiple products.
+    \item Architected a \textbf{webhook platform} supporting configurable subscriptions, \textbf{payload versioning}, \textbf{retry policies}, \textbf{exponential backoff}, and self-service administration, improving integration reliability for payment reconciliation and third-party loyalty and review platforms.
+    \item Increased online visibility and supported customer acquisition and repeat business by building automated restaurant profile pages and post-payment review workflows.
+    % \item Implemented secure payment flows including 3-D Secure authentication and digital wallet token handling (DPAN/FPAN), supporting reconciliation and downstream payment processing.
+
+    % Operational Excellence
+    \item Designed an \textbf{observability platform} that captured end-to-end user actions throughout the payment lifecycle, accelerating production debugging, incident investigation, and customer support resolution.
+
+    % Technical Leadership
+    \item Improved engineering productivity, development consistency, and code quality by introducing Angular Signals, OpenAPI contracts, Zod validation, Git worktrees, and AI-assisted development workflows.
+    \item Mentored engineers through architecture discussions, design reviews, and code reviews, raising overall code quality and accelerating team onboarding.
+  \end{resumeitems}
+\end{entryrow}
+
+% ---------------- Hexagon Mining ----------------
+\begin{entryrow}
+  {\jobmeta
+    {Web Application Developer II}
+    {Hexagon Mining}
+    {MAR 2020 -- APR 2021}
+    {City, ST (Hybrid)}
+    % {
+    %   Platform Modernization\\
+    %   React Migration
+    % }
+    {
+      React\\
+      Redux\\
+      C\#/.NET\\
+      SQL Server\\
+      Entity Framework \\
+      Jest
+    }
+  }
+  \begin{resumeitems}
+    \item Accelerated the company's transition from desktop software to a modern web platform by joining as the first dedicated web application engineer at the City headquarters to develop a mine planning suite.
+    \item Expanded mine planning capabilities by developing frontend features and extending backend services to support new operational workflows and reporting.
+    \item Collaborated with Product Owners and distributed engineering teams across Australia, Canada, and the United States to refine requirements and deliver new product capabilities through Agile development.
+    \item Accelerated development of a web-based geospatial land-survey application by leading the architectural design and defining the technical roadmap that guided subsequent implementation.
+    \item Increased frontend consistency and maintainability across products by contributing reusable components and features to a shared frontend component library.
+    \item Improved application reliability during the transition from desktop to web by developing automated unit and integration tests alongside new frontend and backend functionality.
+  \end{resumeitems}
+\end{entryrow}
+
+% ---------------- Infomercial.tv ----------------
+\begin{entryrow}
+  {\jobmeta
+    {Full-Stack Web Developer}
+    {Infomercial.tv}
+    {FEB 2008 -- OCT 2019}
+    {City, ST (Remote)}
+    % {
+    %   E-Comm Platform Architecture\\
+    %   Cloud Modernization\\
+    %   Payment Systems
+    % }
+    {
+      AWS EC2/RDS/S3/Route 53\\
+      Node.js\\
+      Express\\
+      TypeScript\\
+      JavaScript (ES6+)\\
+      Classic ASP\\
+      % ColdFusion\\
+      jQuery\\
+      Bootstrap\\
+      SQL Server\\
+      MySQL\\
+      T-SQL\\
+      Docker\\
+      % Nginx
+    }
+  }
+  \begin{resumeitems}
+    \item Scaled the company's direct-to-consumer e-commerce platform from tens to hundreds of independently branded storefronts by serving as the primary architect partnering with the founder to define the architecture, infrastructure strategy, and long-term technical direction.
+    \item Enabled scalable infrastructure and faster deployments by modernizing the platform from physical Windows servers to a cloud-native architecture utilizing modern deployment workflows.
+    \item Expanded the platform to support diverse business models by partnering directly with clients and company leadership to translate operational requirements into scalable technical solutions.
+    \item Reduced fulfillment integration effort from weeks to days by architecting a configurable platform that enabled non-technical users to onboard fulfillment partners without custom engineering, supporting multiple file formats and transport protocols.
+    \item Supported peak order volumes of approximately 250K per month by architecting and evolving payment infrastructure integrating multiple gateways, fraud detection, tax calculation, and third-party services.
+    \item Architected SQL Server data models, reporting systems, and REST APIs supporting high-volume order processing, financial reconciliation, and the company's next-generation e-commerce platform.
+    \item Maintained PCI DSS compliance while evolving payment platform architecture and engineering processes, enabling continuous platform growth without compromising regulatory requirements.
+    \item Introduced Git-based workflows, containerized development environments, and modern engineering practices that improved collaboration, deployment consistency, and developer productivity.
+    \item Scaled the engineering organization by onboarding backend, frontend, and DevOps engineers while establishing coding standards, API design guidelines, and mentoring practices that improved code quality and accelerated feature delivery.
+  \end{resumeitems}
+\end{entryrow}
+
+% ============================================================
+% EDUCATION
+% ============================================================
+\sectionlabel{Education}
+
+\begin{entryrow}
+  {\edumeta
+    {BS in Systems Engineering}
+    {University of Nowhere}
+    {DEC 2000}
+    {City, ST}
+  }
+  Systems Engineering focuses on the design, analysis, and management of complex systems that integrate technical, human, and organizational components. Coursework emphasizes mathematical modeling, probability and statistics, human interface design, decision analysis, and the business aspects of developing large-scale systems.
+\end{entryrow}
+
+% ============================================================
+% LANGUAGES
+% ============================================================
+\par\vspace{-8pt}%
+\noindent\textcolor{lightgray}{\rule{\textwidth}{0.3pt}}\par\vspace{-6pt}%
+\begin{entryrow}{\bfseries\large Languages}
+English (Native)
+\end{entryrow}
+
+\end{document}
